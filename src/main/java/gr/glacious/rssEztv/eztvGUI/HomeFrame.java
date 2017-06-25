@@ -8,6 +8,7 @@ import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.Toolkit;
 import java.awt.TrayIcon;
+import java.awt.TrayIcon.MessageType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
@@ -26,6 +28,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -37,8 +40,6 @@ import gr.glacious.rssEztv.util.TxtEditor;
 
 public class HomeFrame {
 
-	private static final long serialVersionUID = 5078700827741826934L;
-	
 	File file = new File("C:\\Users\\Glacious\\Documents\\favorites.txt");
 	File dFile = new File("C:\\Users\\Glacious\\Documents\\downloaded.txt");
 
@@ -47,7 +48,8 @@ public class HomeFrame {
 	FeedMessage series;
 	TxtEditor txtEditor;
 	TrayIcon trayIcon;
-    SystemTray tray;
+	SystemTray tray;
+	Timer timer;
 
 	public JFrame frame;
 
@@ -109,6 +111,42 @@ public class HomeFrame {
 			}
 
 		}
+
+		//Add timer
+		timer = new Timer(3600000, new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.println("UPDATED!");
+				trayIcon.displayMessage("Eztv","Updated !", MessageType.INFO);
+				
+				DefaultListModel<String> tempList = new DefaultListModel<>();
+				tempList = listModel;
+				listModel.clear();
+				txtEditor = new TxtEditor();
+								
+				rssList = rssExecute.getRSS();
+				for (FeedMessage rss : rssList) {
+					for (int i = 0; i < txtEditor.readFromFile(file).size(); i++) {
+						if (rss.getTitle().startsWith(txtEditor.readFromFile(file).get(i))) {
+							if (!txtEditor.readFromFile(dFile).contains(rss.getTitle())) {
+								listModel.addElement(rss.getTitle());
+
+							}
+
+						}
+					}
+
+				}
+				
+				if (tempList.equals(listModel)) {
+					trayIcon.displayMessage("Eztv","New Torrent Available !", MessageType.INFO);
+				}
+
+			}
+		});
+		timer.setInitialDelay(0);
+		timer.start();
 
 		// create the list
 
@@ -254,80 +292,86 @@ public class HomeFrame {
 
 		JMenuItem mntmAbout = new JMenuItem("About");
 		mnHelp.add(mntmAbout);
-		
-		//Hide to tray
-		
+
+		// Hide to tray
+
 		System.out.println("creating instance");
-        try{
-            System.out.println("setting look and feel");
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        }catch(Exception e){
-            System.out.println("Unable to set LookAndFeel");
-        }
-        if(SystemTray.isSupported()){
-            System.out.println("system tray supported");
-            tray=SystemTray.getSystemTray();
+		try {
+			System.out.println("setting look and feel");
+			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+		} catch (Exception e) {
+			System.out.println("Unable to set LookAndFeel");
+		}
+		if (SystemTray.isSupported()) {
+			System.out.println("system tray supported");
+			tray = SystemTray.getSystemTray();
 
-            Image image=Toolkit.getDefaultToolkit().getImage("C:\\Users\\Glacious\\Pictures\\favicon.png");
-            ActionListener exitListener=new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    System.out.println("Exiting....");
-                    System.exit(0);
-                }
-            };
-            PopupMenu popup=new PopupMenu();
-            MenuItem defaultItem=new MenuItem("Exit");
-            defaultItem.addActionListener(exitListener);
-            popup.add(defaultItem);
-            defaultItem=new MenuItem("Open");
-            defaultItem.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                	frame.setVisible(true);
-                	frame.setExtendedState(JFrame.NORMAL);
-                }
-            });
-            popup.add(defaultItem);
-            trayIcon=new TrayIcon(image, "SystemTray Demo", popup);
-            trayIcon.setImageAutoSize(true);
-        }else{
-            System.out.println("system tray not supported");
-        }
-        frame.addWindowStateListener(new WindowStateListener() {
-            public void windowStateChanged(WindowEvent e) {
-                if(e.getNewState()==JFrame.ICONIFIED){
-                    try {
-                        tray.add(trayIcon);
-                        frame.setVisible(false);
-                        System.out.println("added to SystemTray");
-                    } catch (AWTException ex) {
-                        System.out.println("unable to add to tray");
-                    }
-                }
-        if(e.getNewState()==7){
-                    try{
-            tray.add(trayIcon);
-            frame.setVisible(false);
-            System.out.println("added to SystemTray");
-            }catch(AWTException ex){
-            System.out.println("unable to add to system tray");
-        }
-            }
-        if(e.getNewState()==JFrame.MAXIMIZED_BOTH){
-                    tray.remove(trayIcon);
-                    frame.setVisible(true);
-                    System.out.println("Tray icon removed");
-                }
-                if(e.getNewState()==JFrame.NORMAL){
-                    tray.remove(trayIcon);
-                    frame.setVisible(true);
-                    System.out.println("Tray icon removed");
-                }
-            }
-        });
-        frame.setIconImage(Toolkit.getDefaultToolkit().getImage("Duke256.png"));
+			Image image = Toolkit.getDefaultToolkit().getImage("C:\\Users\\Glacious\\Pictures\\favicon.png");
+			ActionListener exitListener = new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("Exiting....");
+					System.exit(0);
+				}
+			};
+			PopupMenu popup = new PopupMenu();
+			MenuItem defaultItem = new MenuItem("Exit");
+			defaultItem.addActionListener(exitListener);
+			popup.add(defaultItem);
+			defaultItem = new MenuItem("Open");
+			defaultItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					frame.setVisible(true);
+					frame.setExtendedState(JFrame.NORMAL);
+				}
+			});
+			popup.add(defaultItem);
+			trayIcon = new TrayIcon(image, "Eztv", popup);
+			trayIcon.setImageAutoSize(true);
+		} else {
+			System.out.println("system tray not supported");
+		}
+		frame.addWindowStateListener(new WindowStateListener() {
+			public void windowStateChanged(WindowEvent e) {
+				if (e.getNewState() == JFrame.ICONIFIED) {
+					try {
+						tray.add(trayIcon);
+						frame.setVisible(false);
+						System.out.println("added to SystemTray");
+						/*
+						 * try { TimeUnit.SECONDS.sleep(5); } catch
+						 * (InterruptedException e1) { // TODO Auto-generated
+						 * catch block e1.printStackTrace(); }
+						 * trayIcon.displayMessage("Eztv",
+						 * "New Torrent Available !", MessageType.INFO);
+						 */
+					} catch (AWTException ex) {
+						System.out.println("unable to add to tray");
+					}
+				}
+				if (e.getNewState() == 7) {
+					try {
+						tray.add(trayIcon);
+						frame.setVisible(false);
+						System.out.println("added to SystemTray");
+					} catch (AWTException ex) {
+						System.out.println("unable to add to system tray");
+					}
+				}
+				if (e.getNewState() == JFrame.MAXIMIZED_BOTH) {
+					tray.remove(trayIcon);
+					frame.setVisible(true);
+					System.out.println("Tray icon removed");
+				}
+				if (e.getNewState() == JFrame.NORMAL) {
+					tray.remove(trayIcon);
+					frame.setVisible(true);
+					System.out.println("Tray icon removed");
+				}
+			}
+		});
 
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	}
 }
