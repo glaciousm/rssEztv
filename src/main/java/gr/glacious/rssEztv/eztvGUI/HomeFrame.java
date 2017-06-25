@@ -35,7 +35,7 @@ import gr.glacious.rssEztv.model.FeedMessage;
 import gr.glacious.rssEztv.util.OpenPage;
 import gr.glacious.rssEztv.util.TxtEditor;
 
-public class HomeFrame extends HideToSystemTray {
+public class HomeFrame {
 
 	private static final long serialVersionUID = 5078700827741826934L;
 	
@@ -294,7 +294,7 @@ public class HomeFrame extends HideToSystemTray {
         }
         frame.addWindowStateListener(new WindowStateListener() {
             public void windowStateChanged(WindowEvent e) {
-                if(e.getNewState()==ICONIFIED){
+                if(e.getNewState()==JFrame.ICONIFIED){
                     try {
                         tray.add(trayIcon);
                         frame.setVisible(false);
@@ -312,19 +312,19 @@ public class HomeFrame extends HideToSystemTray {
             System.out.println("unable to add to system tray");
         }
             }
-        if(e.getNewState()==MAXIMIZED_BOTH){
+        if(e.getNewState()==JFrame.MAXIMIZED_BOTH){
                     tray.remove(trayIcon);
                     frame.setVisible(true);
                     System.out.println("Tray icon removed");
                 }
-                if(e.getNewState()==NORMAL){
+                if(e.getNewState()==JFrame.NORMAL){
                     tray.remove(trayIcon);
                     frame.setVisible(true);
                     System.out.println("Tray icon removed");
                 }
             }
         });
-        setIconImage(Toolkit.getDefaultToolkit().getImage("Duke256.png"));
+        frame.setIconImage(Toolkit.getDefaultToolkit().getImage("Duke256.png"));
 
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
