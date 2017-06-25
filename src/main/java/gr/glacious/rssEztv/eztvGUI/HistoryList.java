@@ -18,21 +18,19 @@ import javax.swing.event.ListSelectionListener;
 
 import gr.glacious.rssEztv.util.TxtEditor;
 
-public class FavoriteList {
+public class HistoryList {
 
-	File file = new File("C:\\Users\\Glacious\\Documents\\favorites.txt");
 	public JFrame frame;
 	DefaultListModel<String> listModel = new DefaultListModel<>();
 	TxtEditor txtEditor;
 	List<String> favoriteList;
-
+	File file = new File("C:\\Users\\Glacious\\Documents\\downloaded.txt");
 
 
 	/**
 	 * Create the application.
 	 */
-	public FavoriteList(JMenuBar menuBar) {
-		
+	public HistoryList(JMenuBar menuBar) {
 		initialize(menuBar);
 	}
 
@@ -40,13 +38,35 @@ public class FavoriteList {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize(JMenuBar menuBar) {
-		
-		JButton btnDelete = new JButton("Delete");
-		btnDelete.setEnabled(false);
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		
+		JButton btnDelete = new JButton("Delete");
+		btnDelete.setEnabled(false);
+		
+		JList<String> list = new JList<>(listModel);
+		list.addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				btnDelete.setEnabled(true);
+				
+			}
+		});
+		
+		txtEditor = new TxtEditor();
+		favoriteList = txtEditor.readFromFile(file);
+
+		for (String favorite : favoriteList) {
+			listModel.addElement(favorite);
+		}
+		
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 30, 414, 177);
+		scrollPane.setViewportView(list);
+		frame.getContentPane().add(scrollPane);
 		
 		JButton btnBack = new JButton("Back");
 		btnBack.addActionListener(new ActionListener() {
@@ -61,28 +81,7 @@ public class FavoriteList {
 		});
 		btnBack.setBounds(190, 227, 80, 23);
 		frame.getContentPane().add(btnBack);
-
-		JList<String> list = new JList<>(listModel);
-		list.addListSelectionListener(new ListSelectionListener() {
-			
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				btnDelete.setEnabled(true);
-				
-			}
-		});
-		txtEditor = new TxtEditor();
-		favoriteList = txtEditor.readFromFile(file);
-
-		for (String favorite : favoriteList) {
-			listModel.addElement(favorite);
-		}
-
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(10, 30, 414, 177);
-		scrollPane.setViewportView(list);
-		frame.getContentPane().add(scrollPane);
-
+		
 		JButton btnAdd = new JButton("Add");
 		btnAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -110,7 +109,6 @@ public class FavoriteList {
 		});
 		btnAdd.setBounds(10, 227, 80, 23);
 		frame.getContentPane().add(btnAdd);
-
 		
 		btnDelete.addActionListener(new ActionListener() {
 
@@ -137,6 +135,7 @@ public class FavoriteList {
 		frame.getContentPane().add(btnDelete);
 		
 		frame.add(menuBar);
+		
 	}
 
 }

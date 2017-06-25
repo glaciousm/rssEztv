@@ -169,7 +169,7 @@ public class HomeFrame {
 		});
 		mnFile.add(mntmExit);
 
-		JMenu mnFavorites = new JMenu("Favorites");
+		JMenu mnFavorites = new JMenu("TV Series");
 		menuBar.add(mnFavorites);
 
 		JMenuItem mntmFavoriteList = new JMenuItem("Favorite List");
@@ -185,6 +185,21 @@ public class HomeFrame {
 			}
 		});
 		mnFavorites.add(mntmFavoriteList);
+		
+		JMenuItem mntmHistoryList = new JMenuItem("History List");
+		
+		mntmHistoryList.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				HistoryList historyList = new HistoryList(menuBar);
+				frame.setVisible(false);
+				historyList.frame.setVisible(true);
+				
+			}
+		});
+		
+		mnFavorites.add(mntmHistoryList);
 
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
