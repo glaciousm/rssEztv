@@ -3,29 +3,39 @@ package gr.glacious.rssEztv.eztvGUI;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
-import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import gr.glacious.rssEztv.RSS.RSSExecute;
+import gr.glacious.rssEztv.model.FeedMessage;
+import gr.glacious.rssEztv.util.OpenPage;
 import gr.glacious.rssEztv.util.TxtEditor;
 
 public class HomeFrame {
 
-	private String favorite;
-	List<String> rssList;
+	File file = new File("C:\\Users\\Glacious\\Documents\\favorites.txt");
+	File dFile = new File("C:\\Users\\Glacious\\Documents\\downloaded.txt");
+
+	List<FeedMessage> rssList;
+	String selected;
+	FeedMessage series;
+	TxtEditor txtEditor;
 
 	public JFrame frame;
-	private JTextField textField;
 
 	/**
 	 * Launch the application.
@@ -58,30 +68,90 @@ public class HomeFrame {
 		RSSExecute rssExecute = new RSSExecute();
 
 		DefaultListModel<String> listModel = new DefaultListModel<>();
+		JList<String> rssJList = new JList<>(listModel);
+		JScrollPane scrollPane = new JScrollPane();
+		JButton btnDownload = new JButton("Download");
 
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 
-		JScrollPane scrollPane = new JScrollPane();
 		
+
 		rssList = rssExecute.getRSS();
-		TxtEditor favs = new TxtEditor();
-		for (String rss : rssList) {
-			for (int i = 0; i < favs.readFromFile().size(); i++) {
-				if (rss.startsWith(favs.readFromFile().get(i))) {
-					listModel.addElement(rss);
+		txtEditor = new TxtEditor();
+		for (FeedMessage rss : rssList) {
+			for (int i = 0; i < txtEditor.readFromFile(file).size(); i++) {
+				if (rss.getTitle().startsWith(txtEditor.readFromFile(file).get(i))) {
+					if (!txtEditor.readFromFile(dFile).contains(rss.getTitle())) {
+
+						listModel.addElement(rss.getTitle());
+
+					}
+
 				}
 			}
 
 		}
 
 		// create the list
-		JList<String> rssList = new JList<>(listModel);
-		scrollPane.setBounds(10, 40, 414, 190);
-		scrollPane.setViewportView(rssList);
+		
+		rssJList.addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				btnDownload.setEnabled(true);
+				
+			}
+		});
+		scrollPane.setBounds(10, 10, 414, 190);
+		scrollPane.setViewportView(rssJList);
 		frame.getContentPane().add(scrollPane);
+
+		
+		btnDownload.setEnabled(false);
+		btnDownload.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				for (FeedMessage feedMessage : rssList) {
+
+					if (rssJList.getSelectedValuesList().contains(feedMessage.getTitle())) {
+
+						try {
+							OpenPage.openWebpage(new URI(feedMessage.getMagnetURI()));
+						} catch (URISyntaxException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						try {
+							txtEditor.writeToFile(feedMessage.getTitle(), dFile);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						listModel.clear();
+						txtEditor = new TxtEditor();
+						for (FeedMessage rss : rssList) {
+							for (int i = 0; i < txtEditor.readFromFile(file).size(); i++) {
+								if (rss.getTitle().startsWith(txtEditor.readFromFile(file).get(i))) {
+									if (!txtEditor.readFromFile(dFile).contains(rss.getTitle())) {
+										listModel.addElement(rss.getTitle());
+
+									}
+
+								}
+							}
+
+						}
+						
+					}
+
+				}
+			}
+		});
+
+		btnDownload.setBounds(10, 211, 89, 23);
+		frame.getContentPane().add(btnDownload);
 
 		JMenuBar menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -107,12 +177,10 @@ public class HomeFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				
+
 				FavoriteList favoriteList = new FavoriteList(menuBar);
-				System.out.println(menuBar.getComponentCount());
 				frame.setVisible(false);
 				favoriteList.frame.setVisible(true);
-				
 
 			}
 		});

@@ -9,14 +9,14 @@ import gr.glacious.rssEztv.read.RSSFeedParser;
 
 public class RSSExecute {
 	
-	public List<String> getRSS(){
-		List<String> rss = new ArrayList<>();
+	public List<FeedMessage> getRSS(){
+		List<FeedMessage> rss = new ArrayList<>();
 		
 		RSSFeedParser parser = new RSSFeedParser(
                 "https://eztv.ag/ezrss.xml");
         Feed feed = parser.readFeed();
         for (FeedMessage message : feed.getMessages()) {
-            rss.add(message.getTitle());
+            rss.add(message);
 
         }
         

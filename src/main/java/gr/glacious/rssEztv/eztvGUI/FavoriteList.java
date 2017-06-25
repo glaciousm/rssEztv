@@ -1,24 +1,26 @@
 package gr.glacious.rssEztv.eztvGUI;
 
-import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JInternalFrame;
 import javax.swing.JList;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import gr.glacious.rssEztv.util.TxtEditor;
 
 public class FavoriteList {
 
+	File file = new File("C:\\Users\\Glacious\\Documents\\favorites.txt");
 	public JFrame frame;
 	DefaultListModel<String> listModel = new DefaultListModel<>();
 	TxtEditor txtEditor;
@@ -38,6 +40,9 @@ public class FavoriteList {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize(JMenuBar menuBar) {
+		
+		JButton btnDelete = new JButton("Delete");
+		btnDelete.setEnabled(false);
 		frame = new JFrame();
 		frame.setBounds(100, 100, 450, 300);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -58,8 +63,16 @@ public class FavoriteList {
 		frame.getContentPane().add(btnCancel);
 
 		JList<String> list = new JList<>(listModel);
+		list.addListSelectionListener(new ListSelectionListener() {
+			
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				btnDelete.setEnabled(true);
+				
+			}
+		});
 		txtEditor = new TxtEditor();
-		favoriteList = txtEditor.readFromFile();
+		favoriteList = txtEditor.readFromFile(file);
 
 		for (String favorite : favoriteList) {
 			listModel.addElement(favorite);
@@ -77,7 +90,7 @@ public class FavoriteList {
 
 				txtEditor = new TxtEditor();
 				try {
-					if (txtEditor.writeToFile(title).equals("Already Exists")) {
+					if (txtEditor.writeToFile(title,file).equals("Already Exists")) {
 						JOptionPane.showMessageDialog(frame, "Series already in the list", "Warning",
 						        JOptionPane.WARNING_MESSAGE);
 					} else {
@@ -88,7 +101,7 @@ public class FavoriteList {
 					e.printStackTrace();
 				}
 
-				favoriteList = txtEditor.readFromFile();
+				favoriteList = txtEditor.readFromFile(file);
 				listModel.clear();
 				for (String favorite : favoriteList) {
 					listModel.addElement(favorite);
@@ -98,22 +111,21 @@ public class FavoriteList {
 		btnAdd.setBounds(10, 227, 80, 23);
 		frame.getContentPane().add(btnAdd);
 
-		JButton btnDelete = new JButton("Delete");
+		
 		btnDelete.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String selected = list.getSelectedValue();
-				System.out.println(selected);
 				txtEditor = new TxtEditor();
 
 				try {
-					txtEditor.deleteFromFile(selected);
+					txtEditor.deleteFromFile(selected,file);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
 
-				favoriteList = txtEditor.readFromFile();
+				favoriteList = txtEditor.readFromFile(file);
 				listModel.clear();
 				for (String favorite : favoriteList) {
 					listModel.addElement(favorite);

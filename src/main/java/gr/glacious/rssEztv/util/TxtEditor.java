@@ -16,9 +16,7 @@ import java.util.List;
 
 public class TxtEditor {
 
-	File file = new File("C:\\Users\\Glacious\\Documents\\favorites.txt");
-
-	public List<String> readFromFile() {
+	public List<String> readFromFile(File file) {
 		List<String> lines = Collections.emptyList();
 
 		try {
@@ -31,8 +29,8 @@ public class TxtEditor {
 		return lines;
 	}
 
-	public String writeToFile(String title) throws IOException {
-		List<String> txtList = readFromFile();
+	public String writeToFile(String title,File file) throws IOException {
+		List<String> txtList = readFromFile(file);
 		if (txtList.contains(title)) {
 			System.out.println("Already Exists");
 			return "Already Exists";
@@ -51,7 +49,7 @@ public class TxtEditor {
 		return "OK";
 	}
 	
-	public void deleteFromFile(String title) throws FileNotFoundException, IOException{
+	public void deleteFromFile(String title,File file) throws FileNotFoundException, IOException{
 		
 			 
 	        try {
